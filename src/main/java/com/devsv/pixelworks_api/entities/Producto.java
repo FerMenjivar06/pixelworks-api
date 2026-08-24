@@ -34,6 +34,9 @@ public class Producto implements Serializable {
     @Column(name = "imagen", length = 255)
     private String imagen;
 
+    @Column(name = "activo", nullable = false)
+    private Boolean activo = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
