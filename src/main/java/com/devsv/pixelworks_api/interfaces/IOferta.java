@@ -1,0 +1,12 @@
+package com.devsv.pixelworks_api.interfaces;
+
+import com.devsv.pixelworks_api.dto.OfertaDTO;
+import java.util.List;
+
+public interface IOferta {
+    List<OfertaDTO> listarTodas();
+    OfertaDTO obtenerPorId(Integer id);
+    OfertaDTO guardar(OfertaDTO dto);
+    OfertaDTO actualizar(Integer id, OfertaDTO dto);
+    void eliminar(Integer id);
+}
