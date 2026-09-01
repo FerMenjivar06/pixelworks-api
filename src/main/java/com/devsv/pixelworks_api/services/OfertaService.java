@@ -3,17 +3,18 @@ package com.devsv.pixelworks_api.services;
 import com.devsv.pixelworks_api.dto.OfertaDTO;
 import com.devsv.pixelworks_api.entities.Oferta;
 import com.devsv.pixelworks_api.exceptions.ResourceNotFoundException;
-import com.devsv.pixelworks_api.interfaces.IOferta;
+import com.devsv.pixelworks_api.interfaces.IOfertaService;
 import com.devsv.pixelworks_api.mappers.OfertaMapper;
 import com.devsv.pixelworks_api.repository.OfertaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OfertaService implements IOferta {
+public class OfertaService implements IOfertaService {
 
     private final OfertaRepository ofertaRepository;
     private final OfertaMapper ofertaMapper;
@@ -64,5 +65,13 @@ public class OfertaService implements IOferta {
             throw new ResourceNotFoundException("Oferta no encontrada con el ID: " + id);
         }
         ofertaRepository.deleteById(id);
+    }
+    @Override
+    public BigDecimal obtenerDescuentoActivo(Integer productoId) {
+        // TODO: Lógica pendiente. Aquí se debe consultar a la base de datos
+        // si el juego está en una campaña vigente el día de hoy.
+
+        // Retornamos CERO para que el proyecto compile y asuma que no hay descuento por ahora.
+        return BigDecimal.ZERO;
     }
 }

@@ -1,7 +1,7 @@
 package com.devsv.pixelworks_api.controllers;
 
 import com.devsv.pixelworks_api.dto.OfertaDTO;
-import com.devsv.pixelworks_api.interfaces.IOferta;
+import com.devsv.pixelworks_api.interfaces.IOfertaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OfertaController {
 
-    private final IOferta oferta;
+    private final IOfertaService oferta;
 
     @GetMapping
     public ResponseEntity<List<OfertaDTO>> listarTodas() {
