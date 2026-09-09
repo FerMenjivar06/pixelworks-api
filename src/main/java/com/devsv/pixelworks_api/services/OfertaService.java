@@ -6,10 +6,12 @@ import com.devsv.pixelworks_api.exceptions.ResourceNotFoundException;
 import com.devsv.pixelworks_api.interfaces.IOfertaService;
 import com.devsv.pixelworks_api.mappers.OfertaMapper;
 import com.devsv.pixelworks_api.repository.OfertaRepository;
+import com.devsv.pixelworks_api.repository.OfertaProductoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -17,6 +19,7 @@ import java.util.List;
 public class OfertaService implements IOfertaService {
 
     private final OfertaRepository ofertaRepository;
+    private final OfertaProductoRepository ofertaProductoRepository;
     private final OfertaMapper ofertaMapper;
 
     @Override
@@ -66,12 +69,16 @@ public class OfertaService implements IOfertaService {
         }
         ofertaRepository.deleteById(id);
     }
+
     @Override
     public BigDecimal obtenerDescuentoActivo(Integer productoId) {
-        // TODO: Lógica pendiente. Aquí se debe consultar a la base de datos
-        // si el juego está en una campaña vigente el día de hoy.
+        LocalDate hoy = LocalDate.now();
 
-        // Retornamos CERO para que el proyecto compile y asuma que no hay descuento por ahora.
-        return BigDecimal.ZERO;
+        return ofertaRepository.findAll().stream()
+                .filter(oferta -> !hoy.isBefore(oferta.getFechaInicio()) && !hoy.isAfter(oferta.getFechaFin()))
+                .filter(oferta -> ofertaProductoRepository.existsByOfertaIdAndProductoId(oferta.getId(), productoId))
+                .map(Oferta::getPorcentajeDescuento)
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
     }
 }

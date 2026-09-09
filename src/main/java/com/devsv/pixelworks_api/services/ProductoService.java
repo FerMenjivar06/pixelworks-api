@@ -5,6 +5,8 @@ import com.devsv.pixelworks_api.entities.Categoria;
 import com.devsv.pixelworks_api.entities.Desarrollador;
 import com.devsv.pixelworks_api.entities.Producto;
 import com.devsv.pixelworks_api.exceptions.ResourceNotFoundException;
+import com.devsv.pixelworks_api.interfaces.IClaveActivacionService;
+import com.devsv.pixelworks_api.interfaces.IOfertaService;
 import com.devsv.pixelworks_api.interfaces.IProductoService;
 import com.devsv.pixelworks_api.mappers.ProductoMapper;
 import com.devsv.pixelworks_api.repository.CategoriaRepository;
@@ -14,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,11 +30,14 @@ public class ProductoService implements IProductoService {
     private final DesarrolladorRepository desarrolladorRepository;
     private final ProductoMapper productoMapper;
 
+    private final IClaveActivacionService claveActivacionService;
+    private final IOfertaService ofertaService;
+
     @Override
     @Transactional(readOnly = true)
     public List<ProductoDTO> listarTodos() {
         return productoRepository.findAll().stream()
-                .map(productoMapper::toDTO)
+                .map(this::completarDatosProducto)
                 .collect(Collectors.toList());
     }
 
@@ -39,7 +46,7 @@ public class ProductoService implements IProductoService {
     public ProductoDTO obtenerPorId(Integer id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con el ID: " + id));
-        return productoMapper.toDTO(producto);
+        return completarDatosProducto(producto);
     }
 
     @Override
@@ -56,10 +63,9 @@ public class ProductoService implements IProductoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Desarrollador no encontrado con ID: " + dto.getDesarrolladorId()));
 
         Producto producto = productoMapper.toEntity(dto, categoria, desarrollador);
-
-        Producto productoGuardado = productoRepository.save(producto);
-        return productoMapper.toDTO(productoGuardado);
+        return productoMapper.toDTO(productoRepository.save(producto));
     }
+
     @Override
     @Transactional
     public ProductoDTO actualizar(Integer id, ProductoDTO dto) {
@@ -84,8 +90,7 @@ public class ProductoService implements IProductoService {
             existente.setDesarrollador(desarrollador);
         }
 
-        Producto actualizado = productoRepository.save(existente);
-        return productoMapper.toDTO(actualizado);
+        return productoMapper.toDTO(productoRepository.save(existente));
     }
 
     @Override
@@ -96,5 +101,25 @@ public class ProductoService implements IProductoService {
 
         producto.setActivo(false);
         productoRepository.save(producto);
+    }
+
+    private ProductoDTO completarDatosProducto(Producto producto) {
+        ProductoDTO dto = productoMapper.toDTO(producto);
+
+        long stock = claveActivacionService.contarStockDisponible(producto.getId());
+        dto.setStock((int) stock);
+
+        BigDecimal descuento = ofertaService.obtenerDescuentoActivo(producto.getId());
+        dto.setPorcentajeDescuento(descuento);
+
+        if (descuento != null && descuento.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal factor = BigDecimal.ONE.subtract(descuento.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+            BigDecimal precioFinal = producto.getPrecio().multiply(factor).setScale(2, RoundingMode.HALF_UP);
+            dto.setPrecioConDescuento(precioFinal);
+        } else {
+            dto.setPrecioConDescuento(null);
+        }
+
+        return dto;
     }
 }

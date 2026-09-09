@@ -28,13 +28,13 @@ public class OfertaProductoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('DESARROLLADOR', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OfertaProductoDTO> guardar(@RequestBody OfertaProductoDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ofertaProductoService.guardar(dto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('DESARROLLADOR', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         ofertaProductoService.eliminar(id);
         return ResponseEntity.noContent().build();
