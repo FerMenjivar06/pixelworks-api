@@ -6,6 +6,7 @@ import com.devsv.pixelworks_api.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -53,9 +54,15 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Registro y Login abiertos
-                        .requestMatchers("/api/claves/producto/*/stock").permitAll() // Stock público
-                        .anyRequest().authenticated()                // TODO lo demás exige token válido
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/producto/{productoId}/stock").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/api/productos").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categorias").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/desarrolladores").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ofertas").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -67,9 +74,6 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://127.0.0.1:5500",
-                "http://localhost:5500",
-                "http://localhost:3000",
                 "http://localhost:5173",
                 "http://localhost:5174"
         ));
