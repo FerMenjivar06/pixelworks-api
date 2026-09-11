@@ -16,8 +16,4 @@ public class ProductoDTO {
     private String imagen;
     private Integer categoriaId;
     private Integer desarrolladorId;
-
-    private Integer stock;
-    private BigDecimal porcentajeDescuento;
-    private BigDecimal precioConDescuento;
 }

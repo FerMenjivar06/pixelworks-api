@@ -19,7 +19,7 @@ public class ClaveActivacionController {
 
     // Candado: Solo dueños del juego o administradores pueden agregar inventario
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DESARROLLADOR', 'ADMIN')")
     public ResponseEntity<ClaveActivacionDTO> guardar(@RequestBody ClaveActivacionDTO dto) {
         ClaveActivacionDTO nuevaClave = claveService.guardar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaClave);
