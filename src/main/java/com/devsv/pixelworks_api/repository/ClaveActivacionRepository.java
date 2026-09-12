@@ -4,17 +4,50 @@ import com.devsv.pixelworks_api.entities.ClaveActivacion;
 import com.devsv.pixelworks_api.enums.EstadoClave;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public interface ClaveActivacionRepository extends JpaRepository<ClaveActivacion, Integer> {
+
     boolean existsByCodigo(String codigo);
 
-    long countByProductoIdAndEstado(Integer productoId, EstadoClave estado);
+    long countByProductoIdAndEstado(
+            Integer productoId,
+            EstadoClave estado
+    );
 
-    List<ClaveActivacion> findByProductoIdAndEstado(Integer productoId, EstadoClave estado, Pageable pageable);
+    List<ClaveActivacion> findByProductoIdAndEstado(
+            Integer productoId,
+            EstadoClave estado,
+            Pageable pageable
+    );
 
-    List<ClaveActivacion> findByDetalleCompraId(Integer detalleCompraId);
+    List<ClaveActivacion> findByDetalleCompraId(
+            Integer detalleCompraId
+    );
+
+    @Query("""
+        SELECT
+            c.producto.id AS productoId,
+            COUNT(c.id) AS stock
+        FROM ClaveActivacion c
+        WHERE c.producto.id IN :productoIds
+          AND c.estado = :estado
+        GROUP BY c.producto.id
+        """)
+    List<StockDisponibleProjection> obtenerStockPorProductos(
+            @Param("productoIds") List<Integer> productoIds,
+            @Param("estado") EstadoClave estado
+    );
+
+    interface StockDisponibleProjection {
+
+        Integer getProductoId();
+
+        Long getStock();
+    }
 }
