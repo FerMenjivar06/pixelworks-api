@@ -14,15 +14,15 @@ public interface CompraRepository extends JpaRepository<Compra, Integer> {
 
     List<Compra> findByUsuarioId(Integer usuarioId);
 
-    @Query("SELECT SUM(c.total) FROM Compra c")
-    java.math.BigDecimal calcularIngresosTotales();
-
-    @Query("SELECT COUNT(c) FROM Compra c")
-    long contarVentasTotales();
-
-    @Query("SELECT SUM(c.total) FROM Compra c WHERE c.fechaVenta BETWEEN :inicio AND :fin")
-    java.math.BigDecimal calcularIngresosPorFecha(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
-
-    @Query("SELECT COUNT(c) FROM Compra c WHERE c.fechaVenta BETWEEN :inicio AND :fin")
-    long contarVentasPorFecha(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+    @Query("SELECT p.nombre, SUM(d.cantidad), SUM(d.subTotal) " +
+            "FROM DetalleCompra d JOIN d.producto p JOIN d.compra c " +
+            "WHERE c.fechaVenta BETWEEN :inicio AND :fin " +
+            "AND (:hasProductos = false OR p.id IN :productoIds) " +
+            "GROUP BY p.id, p.nombre")
+    List<Object[]> obtenerDesgloseVentas(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fin") LocalDateTime fin,
+            @Param("productoIds") List<Integer> productoIds,
+            @Param("hasProductos") boolean hasProductos
+    );
 }
