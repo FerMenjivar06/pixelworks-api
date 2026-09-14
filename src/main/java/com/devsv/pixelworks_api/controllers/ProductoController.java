@@ -15,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductoController {
 
+    // Se inyecta la interfaz del servicio, para darle el trabjo a productoService
     private final IProductoService productoService;
 
     @GetMapping
